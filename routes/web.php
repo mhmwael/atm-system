@@ -1,39 +1,34 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ATMController;
 
-// Authentication Routes
 Route::get('/', function () {
-    return view('auth.login');
+    return redirect()->route('login');
 });
 
+// Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/login/fingerprint', [AuthController::class, 'loginWithFingerprint']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
-    
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/profile', [DashboardController::class, 'profile'])->name('profile');
     
-    // ATM Routes
-    Route::get('/atm', [ATMController::class, 'index'])->name('atm.index');
+    // CRUD Operations (Example: Accounts)
+    Route::resource('accounts', App\Http\Controllers\AccountController::class);
     
-    // Withdrawal
-    Route::get('/atm/withdraw', [ATMController::class, 'showWithdraw'])->name('atm.withdraw');
-    Route::post('/atm/withdraw', [ATMController::class, 'processWithdraw'])->name('atm.withdraw.process');
+    // Ajax Endpoints
+    Route::get('/api/balance', [DashboardController::class, 'getBalance']);
     
-    // Transfer (NEW)
-    Route::get('/atm/transfer', [ATMController::class, 'showTransfer'])->name('atm.transfer');
-    Route::post('/atm/transfer', [ATMController::class, 'processTransfer'])->name('atm.transfer.process');
-    
-    Route::get('/atm/history', function() {
-        return redirect('/dashboard');
-    });
-    
-    // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // File Upload
+    Route::post('/upload-photo', [DashboardController::class, 'uploadPhoto'])->name('upload.photo');
+
+    // Biometrics (Fingerprint)
+    Route::post('/register-fingerprint', [DashboardController::class, 'registerFingerprint'])->name('fingerprint.register');
 });
