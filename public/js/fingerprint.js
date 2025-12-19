@@ -9,8 +9,9 @@ class FingerprintAuth {
         this.statusText = document.querySelector(".scanner-status");
         this.scannerAnimation = document.querySelector(".scanner-animation");
         this.fingerprintForm = document.getElementById("fingerprint-form");
-        this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                        document.querySelector('input[name="_token"]')?.value;
+        this.csrfToken =
+            document.querySelector('meta[name="csrf-token"]')?.content ||
+            document.querySelector('input[name="_token"]')?.value;
 
         this.init();
     }
@@ -25,6 +26,19 @@ class FingerprintAuth {
     }
 
     checkBrowserSupport() {
+        if (!window.isSecureContext) {
+            console.warn(
+                "[FingerprintAuth] Not a secure context (HTTPS/localhost required)"
+            );
+            this.showError(
+                "WebAuthn requires HTTPS or localhost. Use HTTPS, Ngrok, or Cloudflare Tunnel to test on phone."
+            );
+            if (this.scanButton) {
+                this.scanButton.disabled = true;
+            }
+            return false;
+        }
+
         if (!window.PublicKeyCredential) {
             this.showError(
                 "Biometric authentication is not supported on this browser"
@@ -49,10 +63,14 @@ class FingerprintAuth {
             const result = await this.authenticateWithWebAuthn();
 
             if (result.success) {
-                this.updateStatus("Fingerprint verified successfully!", "success");
-                
+                this.updateStatus(
+                    "Fingerprint verified successfully!",
+                    "success"
+                );
+
                 // Set the fingerprint data (credential ID)
-                document.getElementById("fingerprint_data").value = result.credentialId;
+                document.getElementById("fingerprint_data").value =
+                    result.credentialId;
 
                 // Submit the form after successful scan
                 setTimeout(() => {
@@ -94,18 +112,25 @@ class FingerprintAuth {
                 challenge: this.base64ToArrayBuffer(challengeData.challenge),
                 timeout: 60000,
                 rpId: window.location.hostname,
-                userVerification: "preferred"
+                userVerification: "preferred",
             };
 
             // If there are allowed credentials, add them
-            if (challengeData.allowCredentials && challengeData.allowCredentials.length > 0) {
-                publicKeyCredentialRequestOptions.allowCredentials = challengeData.allowCredentials.map(
-                    cred => ({
+            if (
+                challengeData.allowCredentials &&
+                challengeData.allowCredentials.length > 0
+            ) {
+                publicKeyCredentialRequestOptions.allowCredentials =
+                    challengeData.allowCredentials.map((cred) => ({
                         id: this.base64ToArrayBuffer(cred.id),
                         type: "public-key",
-                        transports: cred.transports || ["internal", "usb", "nfc", "ble"]
-                    })
-                );
+                        transports: cred.transports || [
+                            "internal",
+                            "usb",
+                            "nfc",
+                            "ble",
+                        ],
+                    }));
             }
 
             // 3. Request credential from authenticator
@@ -117,19 +142,38 @@ class FingerprintAuth {
                 throw new Error("No credential received");
             }
 
+            console.log(
+                "[FingerprintAuth] Credential received:",
+                credential.id ? credential.id.substring(0, 20) : "none"
+            );
+
             // 4. Prepare credential data for server
             const credentialData = {
-                id: credential.id,
+                id: credential.id, // This is the raw credential ID string
                 rawId: this.arrayBufferToBase64(credential.rawId),
                 type: credential.type,
                 response: {
-                    authenticatorData: this.arrayBufferToBase64(credential.response.authenticatorData),
-                    clientDataJSON: this.arrayBufferToBase64(credential.response.clientDataJSON),
-                    signature: this.arrayBufferToBase64(credential.response.signature),
-                    userHandle: credential.response.userHandle ? 
-                        this.arrayBufferToBase64(credential.response.userHandle) : null
-                }
+                    authenticatorData: this.arrayBufferToBase64(
+                        credential.response.authenticatorData
+                    ),
+                    clientDataJSON: this.arrayBufferToBase64(
+                        credential.response.clientDataJSON
+                    ),
+                    signature: this.arrayBufferToBase64(
+                        credential.response.signature
+                    ),
+                    userHandle: credential.response.userHandle
+                        ? this.arrayBufferToBase64(
+                              credential.response.userHandle
+                          )
+                        : null,
+                },
             };
+
+            console.log(
+                "[FingerprintAuth] Sending credential data with ID:",
+                credentialData.id.substring(0, 20)
+            );
 
             // 5. Send credential to server for verification
             const verifyResponse = await fetch("/webauthn/verify", {
@@ -147,19 +191,20 @@ class FingerprintAuth {
 
             const result = await verifyResponse.json();
             return result;
-
         } catch (error) {
             console.error("WebAuthn error:", error);
-            
+
             // Provide user-friendly error messages
             if (error.name === "NotAllowedError") {
                 throw new Error("Authentication was cancelled or timed out");
             } else if (error.name === "InvalidStateError") {
                 throw new Error("This device is not registered");
             } else if (error.name === "NotSupportedError") {
-                throw new Error("This browser doesn't support biometric authentication");
+                throw new Error(
+                    "This browser doesn't support biometric authentication"
+                );
             }
-            
+
             throw error;
         }
     }
@@ -168,7 +213,7 @@ class FingerprintAuth {
      * Helper function to convert base64 to ArrayBuffer
      */
     base64ToArrayBuffer(base64) {
-        const binaryString = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+        const binaryString = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
@@ -181,11 +226,14 @@ class FingerprintAuth {
      */
     arrayBufferToBase64(buffer) {
         const bytes = new Uint8Array(buffer);
-        let binary = '';
+        let binary = "";
         for (let i = 0; i < bytes.byteLength; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
-        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        return btoa(binary)
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=/g, "");
     }
 
     updateStatus(message, status = "idle") {

@@ -10,8 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Your CSS Files -->
-    <link rel="stylesheet" href="{{ url('css/app.css') }}">
-    <link rel="stylesheet" href="{{ url('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     
     @stack('styles')
 </head>
@@ -51,6 +51,13 @@
                         <a href="#"><i class="fas fa-user"></i> My Profile</a>
                         <a href="#"><i class="fas fa-cog"></i> Settings</a>
                         <a href="#"><i class="fas fa-shield-alt"></i> Security</a>
+                        @auth
+                            @if(auth()->user()->fingerprint_id)
+                                <a href="#" style="opacity: 0.6; cursor: default;"><i class="fas fa-fingerprint"></i> Fingerprint Registered ✓</a>
+                            @else
+                                <a href="#" id="register-fingerprint"><i class="fas fa-fingerprint"></i> Register Fingerprint</a>
+                            @endif
+                        @endauth
                         <hr>
                         <a href="{{ url('/logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="fas fa-sign-out-alt"></i> Logout
@@ -128,9 +135,13 @@
     </main>
 
     <!-- Global JS -->
-    <script src="{{ url('js/app.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
     
     @stack('scripts')
+
+    @auth
+        <script src="{{ asset('js/fingerprint-register.js') }}"></script>
+    @endauth
 
     <script>
         // Toggle sidebar

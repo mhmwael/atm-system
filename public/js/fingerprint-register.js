@@ -7,15 +7,31 @@ class FingerprintRegistration {
     constructor() {
         this.registerButton = document.getElementById("register-fingerprint");
         this.statusElement = document.getElementById("fingerprint-status");
-        this.csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
-                        document.querySelector('input[name="_token"]')?.value;
+        this.csrfToken =
+            document.querySelector('meta[name="csrf-token"]')?.content ||
+            document.querySelector('input[name="_token"]')?.value;
 
+        console.log(
+            "[FingerprintRegistration] Init. Button:",
+            !!this.registerButton,
+            "CSRF:",
+            !!this.csrfToken,
+            "Secure:",
+            window.isSecureContext
+        );
         this.init();
     }
 
     init() {
         if (this.registerButton) {
-            this.registerButton.addEventListener("click", () => this.startRegistration());
+            this.registerButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("[FingerprintRegistration] Button clicked");
+                this.startRegistration();
+            });
+        } else {
+            console.warn("[FingerprintRegistration] No register button found");
         }
 
         // Check if WebAuthn is available
@@ -23,8 +39,26 @@ class FingerprintRegistration {
     }
 
     checkBrowserSupport() {
+        if (!window.isSecureContext) {
+            console.warn(
+                "[FingerprintRegistration] Not a secure context (HTTPS/localhost required)"
+            );
+            this.showError(
+                "WebAuthn requires HTTPS or localhost. Use HTTPS, Ngrok, or Cloudflare Tunnel to test on phone."
+            );
+            if (this.registerButton) {
+                this.registerButton.disabled = true;
+            }
+            return false;
+        }
+
         if (!window.PublicKeyCredential) {
-            this.showError("Biometric authentication is not supported on this browser");
+            console.warn(
+                "[FingerprintRegistration] PublicKeyCredential not available"
+            );
+            this.showError(
+                "Biometric authentication is not supported on this browser"
+            );
             if (this.registerButton) {
                 this.registerButton.disabled = true;
             }
@@ -34,6 +68,7 @@ class FingerprintRegistration {
     }
 
     async startRegistration() {
+        console.log("[FingerprintRegistration] startRegistration called");
         if (!this.checkBrowserSupport()) {
             return;
         }
@@ -68,14 +103,14 @@ class FingerprintRegistration {
                 pubKeyCredParams: options.pubKeyCredParams,
                 timeout: options.timeout,
                 authenticatorSelection: options.authenticatorSelection,
-                attestation: options.attestation
+                attestation: options.attestation,
             };
 
             this.updateStatus("Please scan your fingerprint...", "scanning");
 
             // Create credential
             const credential = await navigator.credentials.create({
-                publicKey: publicKeyCredentialCreationOptions
+                publicKey: publicKeyCredentialCreationOptions,
             });
 
             if (!credential) {
@@ -90,9 +125,13 @@ class FingerprintRegistration {
                 rawId: this.arrayBufferToBase64(credential.rawId),
                 type: credential.type,
                 response: {
-                    attestationObject: this.arrayBufferToBase64(credential.response.attestationObject),
-                    clientDataJSON: this.arrayBufferToBase64(credential.response.clientDataJSON)
-                }
+                    attestationObject: this.arrayBufferToBase64(
+                        credential.response.attestationObject
+                    ),
+                    clientDataJSON: this.arrayBufferToBase64(
+                        credential.response.clientDataJSON
+                    ),
+                },
             };
 
             // Send credential to server
@@ -112,15 +151,18 @@ class FingerprintRegistration {
             const result = await registerResponse.json();
 
             if (result.success) {
-                this.updateStatus("Fingerprint registered successfully! ✓", "success");
-                
+                this.updateStatus(
+                    "Fingerprint registered successfully! ✓",
+                    "success"
+                );
+
                 // Disable the register button and show success
                 if (this.registerButton) {
                     this.registerButton.disabled = true;
                     this.registerButton.textContent = "Fingerprint Registered";
                     this.registerButton.classList.add("btn-success");
                 }
-                
+
                 // Reload page after 2 seconds to show updated status
                 setTimeout(() => {
                     window.location.reload();
@@ -128,23 +170,23 @@ class FingerprintRegistration {
             } else {
                 throw new Error(result.message || "Registration failed");
             }
-
         } catch (error) {
             console.error("Registration error:", error);
-            
+
             // Provide user-friendly error messages
             let message = "Registration failed. Please try again.";
-            
+
             if (error.name === "NotAllowedError") {
                 message = "Registration was cancelled or timed out";
             } else if (error.name === "InvalidStateError") {
                 message = "This device is already registered";
             } else if (error.name === "NotSupportedError") {
-                message = "This browser doesn't support biometric authentication";
+                message =
+                    "This browser doesn't support biometric authentication";
             } else if (error.message) {
                 message = error.message;
             }
-            
+
             this.showError(message);
         }
     }
@@ -153,7 +195,7 @@ class FingerprintRegistration {
      * Helper function to convert base64 to ArrayBuffer
      */
     base64ToArrayBuffer(base64) {
-        const binaryString = atob(base64.replace(/-/g, '+').replace(/_/g, '/'));
+        const binaryString = atob(base64.replace(/-/g, "+").replace(/_/g, "/"));
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
@@ -166,23 +208,29 @@ class FingerprintRegistration {
      */
     arrayBufferToBase64(buffer) {
         const bytes = new Uint8Array(buffer);
-        let binary = '';
+        let binary = "";
         for (let i = 0; i < bytes.byteLength; i++) {
             binary += String.fromCharCode(bytes[i]);
         }
-        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        return btoa(binary)
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=/g, "");
     }
 
     updateStatus(message, type = "info") {
+        console.log("[FingerprintRegistration] Status:", message);
         if (this.statusElement) {
             this.statusElement.textContent = message;
             this.statusElement.className = `fingerprint-status status-${type}`;
+        } else {
+            alert("[Fingerprint Registration] " + message);
         }
     }
 
     showError(message) {
         this.updateStatus(message, "error");
-        
+
         // Also show an alert if available
         const alertContainer = document.getElementById("alert-container");
         if (alertContainer) {
@@ -193,7 +241,7 @@ class FingerprintRegistration {
                 <span>${message}</span>
             `;
             alertContainer.appendChild(alert);
-            
+
             setTimeout(() => alert.remove(), 5000);
         }
     }

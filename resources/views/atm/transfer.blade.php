@@ -3,7 +3,7 @@
 @section('title', 'Transfer Money - SecureBank')
 
 @push('styles')
-<link rel="stylesheet" href="{{ url('css/atm.css') }}">
+<link rel="stylesheet" href="{{ asset('css/atm.css') }}">
 @endpush
 
 @section('content')
