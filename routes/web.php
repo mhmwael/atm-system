@@ -24,15 +24,14 @@ Route::middleware(['auth'])->group(function () {
     
     // Withdrawal
     Route::get('/atm/withdraw', [ATMController::class, 'showWithdraw'])->name('atm.withdraw');
-    Route::post('/atm/withdraw', [ATMController::class, 'processWithdraw'])->name('atm.withdraw.process');
+    Route::post('/atm/withdraw', [ATMController::class, 'processWithdraw']);
     
-    // Transfer (NEW)
+    // Transfer
     Route::get('/atm/transfer', [ATMController::class, 'showTransfer'])->name('atm.transfer');
-    Route::post('/atm/transfer', [ATMController::class, 'processTransfer'])->name('atm.transfer.process');
+    Route::post('/atm/transfer', [ATMController::class, 'processTransfer']);
     
-    Route::get('/atm/history', function() {
-        return redirect('/dashboard');
-    });
+    // History (NEW)
+    Route::get('/atm/history', [ATMController::class, 'showHistory'])->name('atm.history');
     
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

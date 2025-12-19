@@ -34,13 +34,6 @@
             <div class="account-body">
                 <p class="account-label">Savings Account</p>
                 <h2 class="account-balance">$45,280.50</h2>
-                <p class="account-number">****  ****  ****  3847</p>
-            </div>
-            <div class="account-footer">
-                <div class="account-stat">
-                    <span class="stat-label">This month</span>
-                    <span class="stat-value positive">+$2,500</span>
-                </div>
             </div>
         </div>
 
@@ -54,13 +47,6 @@
             <div class="account-body">
                 <p class="account-label">Current Account</p>
                 <h2 class="account-balance">$12,450.00</h2>
-                <p class="account-number">****  ****  ****  7291</p>
-            </div>
-            <div class="account-footer">
-                <div class="account-stat">
-                    <span class="stat-label">Available</span>
-                    <span class="stat-value">$12,450</span>
-                </div>
             </div>
         </div>
 
@@ -74,13 +60,6 @@
             <div class="account-body">
                 <p class="account-label">Gold Account</p>
                 <h2 class="account-balance">$78,900.25</h2>
-                <p class="account-number">****  ****  ****  5593</p>
-            </div>
-            <div class="account-footer">
-                <div class="account-stat">
-                    <span class="stat-label">Interest</span>
-                    <span class="stat-value positive">+2.5% APY</span>
-                </div>
             </div>
         </div>
     </div>
@@ -106,15 +85,6 @@
             </div>
             <h3>Transfer Money</h3>
             <p>Send to any account</p>
-        </a>
-
-
-        <a href="{{ url('/atm/history') }}" class="action-card">
-            <div class="action-icon orange">
-                <i class="fas fa-history"></i>
-            </div>
-            <h3>Transaction History</h3>
-            <p>View past transactions</p>
         </a>
     </div>
 
@@ -198,64 +168,7 @@
     </div>
 
     <!-- Statistics -->
-    <div class="section-header">
-        <h2>Spending Overview</h2>
-        <p>Your spending patterns this month</p>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon blue">
-                <i class="fas fa-shopping-cart"></i>
-            </div>
-            <div class="stat-info">
-                <p class="stat-label">Total Spent</p>
-                <h3 class="stat-value">$3,245.00</h3>
-                <span class="stat-change negative">
-                    <i class="fas fa-arrow-up"></i> 12% from last month
-                </span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon green">
-                <i class="fas fa-arrow-down"></i>
-            </div>
-            <div class="stat-info">
-                <p class="stat-label">Total Income</p>
-                <h3 class="stat-value">$7,500.00</h3>
-                <span class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i> 8% from last month
-                </span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon purple">
-                <i class="fas fa-piggy-bank"></i>
-            </div>
-            <div class="stat-info">
-                <p class="stat-label">Savings</p>
-                <h3 class="stat-value">$4,255.00</h3>
-                <span class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i> 15% from last month
-                </span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-icon orange">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="stat-info">
-                <p class="stat-label">Investments</p>
-                <h3 class="stat-value">$12,890.00</h3>
-                <span class="stat-change positive">
-                    <i class="fas fa-arrow-up"></i> 5.2% ROI
-                </span>
-            </div>
-        </div>
-    </div>
+    
 </div>
 @endsection
 

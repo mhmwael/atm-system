@@ -1,53 +1,11 @@
 <?php
-/*
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-class AuthController extends Controller
-{
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
-
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required',
-            'password' => 'required',
-        ]);
-
-        // Add authentication logic here
-        
-        return redirect()->route('dashboard');
-    }
-
-    public function loginWithFingerprint(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required',
-            'fingerprint_data' => 'required',
-        ]);
-
-        // Add fingerprint authentication logic here
-        
-        return redirect()->route('dashboard');
-    }
-
-    public function logout()
-    {
-        auth()->logout();
-        return redirect()->route('login');
-    }
-}*/
-
 
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -57,56 +15,54 @@ class AuthController extends Controller
     }
 
     public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required',
-            'password' => 'required',
-        ]);
+{
+    $request->validate([
+        'card_number' => 'required',
+        'pin' => 'required|digits:4',
+    ]);
 
-        // Allow any credentials: find or create a user by email and log them in
-        $email = $request->input('email');
+    $cardNumber = $request->input('card_number');
+    $pin = $request->input('pin');
 
-        $user = User::firstOrCreate(
-            ['email' => $email],
-            [
-                'name' => $email,
-                'password' => bcrypt('password'),
-            ]
-        );
+    // 1. Find the user
+    $user = User::where('card_number', $cardNumber)->first();
 
+    // 2. Manual SHA-256 Comparison
+    // We hash the input PIN and see if it matches the string in the DB
+    if ($user && hash('sha256', $pin) === $user->card_pin) {
         Auth::login($user);
-
-        return redirect()->route('dashboard')->with('success', 'Welcome back!');
+        $request->session()->regenerate();
+        return redirect()->intended('dashboard');
     }
+
+    return back()->withErrors([
+        'card_number' => 'Invalid Card Number or PIN.',
+    ]);
+}
 
     public function loginWithFingerprint(Request $request)
     {
         $request->validate([
-            'user_id' => 'required',
             'fingerprint_data' => 'required',
         ]);
 
-        // Allow fingerprint login for any provided user id: try to find the user, else create a placeholder
-        $userId = $request->input('user_id');
+        // Real Auth Logic: Find user by their unique fingerprint ID
+        $user = User::where('fingerprint_id', $request->fingerprint_data)->first();
 
-        $user = User::find($userId);
-
-        if (! $user) {
-            $user = User::create([
-                'name' => 'User ' . $userId,
-                'email' => 'user' . $userId . '@example.com',
-                'password' => bcrypt('password'),
-            ]);
+        if ($user) {
+            Auth::login($user);
+            $request->session()->regenerate();
+            return redirect()->intended('dashboard');
         }
 
-        Auth::login($user);
-
-        return redirect()->route('dashboard')->with('success', 'Fingerprint verified successfully!');
+        return back()->withErrors(['fingerprint' => 'Biometric data not recognized.']);
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
         Auth::logout();
-        return redirect()->route('login')->with('success', 'Logged out successfully!');
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
     }
 }

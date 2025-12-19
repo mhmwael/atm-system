@@ -2,47 +2,69 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'phone',
+        'fingerprint_id',
+        'card_number',
+        'card_pin',
+        'latitude',
+        'longitude',
+        'date_of_birth',
+        'address',
+        'city',
+        'country',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = [
         'password',
-        'remember_token',
+        'card_pin',
+        'fingerprint_id',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'date_of_birth' => 'date',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+    ];
+
+    // Relationships
+    public function accounts()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->hasMany(Account::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function fraudLogs()
+    {
+        return $this->hasMany(FraudLog::class);
+    }
+
+    // Helper method to get average spending
+    public function getAverageSpending()
+    {
+        return $this->transactions()
+            ->where('status', 'completed')
+            ->where('transaction_type', '!=', 'deposit')
+            ->avg('amount') ?? 0;
+    }
+
+    // Check if PIN is correct
+    public function checkPin($pin)
+    {
+        return hash('sha256', $pin) === $this->card_pin;
     }
 }

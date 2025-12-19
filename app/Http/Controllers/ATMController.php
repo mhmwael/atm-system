@@ -20,8 +20,7 @@ class ATMController extends Controller
     {
         $request->validate([
             'account' => 'required|in:savings,current,gold',
-            'amount' => 'required|numeric|min:10|max:5000',
-            'note' => 'nullable|string|max:500'
+            'amount' => 'required|numeric|min:10|max:5000'
         ]);
 
         $account = $request->input('account');
@@ -32,7 +31,6 @@ class ATMController extends Controller
             ->with('success', "Successfully withdrawn $$amount from your $account account!");
     }
 
-    // NEW TRANSFER METHODS
     public function showTransfer()
     {
         return view('atm.transfer');
@@ -50,18 +48,19 @@ class ATMController extends Controller
         $toAccount = $request->input('to_account');
         $amount = $request->input('amount');
 
-        // TODO: Process the transfer
-        // 1. Verify both accounts exist
-        // 2. Check sufficient balance
-        // 3. Create transaction records
-        // 4. Update balances
-        // 5. Send notifications
-
-        // Format account number for display
         $maskedAccount = '****  ****  ****  ' . substr($toAccount, -4);
 
         return redirect()
             ->route('dashboard')
             ->with('success', "Successfully transferred $$amount to $maskedAccount!");
+    }
+
+    // NEW HISTORY METHOD
+    public function showHistory()
+    {
+        // In the future, fetch real transactions from database
+        // For now, the view has hardcoded demo data
+        
+        return view('atm.history');
     }
 }

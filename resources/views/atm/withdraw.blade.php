@@ -54,7 +54,6 @@
                                     </div>
                                     <div class="account-option-info">
                                         <h4>Savings Account</h4>
-                                        <p>****  ****  ****  3847</p>
                                     </div>
                                     <div class="account-option-check">
                                         <i class="fas fa-check-circle"></i>
@@ -76,7 +75,6 @@
                                     </div>
                                     <div class="account-option-info">
                                         <h4>Current Account</h4>
-                                        <p>****  ****  ****  7291</p>
                                     </div>
                                     <div class="account-option-check">
                                         <i class="fas fa-check-circle"></i>
@@ -98,7 +96,6 @@
                                     </div>
                                     <div class="account-option-info">
                                         <h4>Gold Account</h4>
-                                        <p>****  ****  ****  5593</p>
                                     </div>
                                     <div class="account-option-check">
                                         <i class="fas fa-check-circle"></i>
