@@ -48,9 +48,6 @@
                     <i class="fas fa-chevron-down"></i>
                     
                     <div class="user-dropdown">
-                        <a href="#"><i class="fas fa-user"></i> My Profile</a>
-                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
-                        <a href="#"><i class="fas fa-shield-alt"></i> Security</a>
                         @auth
                             @if(auth()->user()->fingerprint_id)
                                 <a href="#" style="opacity: 0.6; cursor: default;"><i class="fas fa-fingerprint"></i> Fingerprint Registered ✓</a>

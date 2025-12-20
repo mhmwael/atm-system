@@ -24,44 +24,34 @@
 
     <!-- Account Cards -->
     <div class="accounts-grid">
-        <div class="account-card primary">
-            <div class="account-header">
-                <div class="account-icon">
-                    <i class="fas fa-wallet"></i>
+        @forelse($accounts as $account)
+            <div class="account-card {{ $account->account_type === 'savings' ? 'primary' : ($account->account_type === 'current' ? 'secondary' : 'tertiary') }}">
+                <div class="account-header">
+                    <div class="account-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="account-badge">{{ ucfirst($account->account_type) }}</div>
                 </div>
-                <div class="account-badge">Primary</div>
-            </div>
-            <div class="account-body">
-                <p class="account-label">Savings Account</p>
-                <h2 class="account-balance">$45,280.50</h2>
-            </div>
-        </div>
-
-        <div class="account-card secondary">
-            <div class="account-header">
-                <div class="account-icon">
-                    <i class="fas fa-credit-card"></i>
+                <div class="account-body">
+                    <p class="account-label">{{ ucfirst($account->account_type) }} Account</p>
+                    <h2 class="account-balance">${{ number_format($account->balance, 2) }}</h2>
+                    <p class="account-number">{{ $account->account_number }}</p>
                 </div>
-                <div class="account-badge">Current</div>
             </div>
-            <div class="account-body">
-                <p class="account-label">Current Account</p>
-                <h2 class="account-balance">$12,450.00</h2>
-            </div>
-        </div>
-
-        <div class="account-card tertiary">
-            <div class="account-header">
-                <div class="account-icon">
-                    <i class="fas fa-piggy-bank"></i>
+        @empty
+            <div class="account-card primary">
+                <div class="account-header">
+                    <div class="account-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div class="account-badge">Primary</div>
                 </div>
-                <div class="account-badge">Gold</div>
+                <div class="account-body">
+                    <p class="account-label">No accounts</p>
+                    <h2 class="account-balance">$0.00</h2>
+                </div>
             </div>
-            <div class="account-body">
-                <p class="account-label">Gold Account</p>
-                <h2 class="account-balance">$78,900.25</h2>
-            </div>
-        </div>
+        @endforelse
     </div>
 
     <!-- Quick Actions Grid -->
@@ -97,70 +87,42 @@
                 <a href="{{ url('/atm/history') }}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
             </div>
             <div class="card-body">
-                <div class="transaction-item">
-                    <div class="transaction-icon sent">
-                        <i class="fas fa-arrow-up"></i>
+                @php
+                    $userAccountIds = auth()->user()->accounts->pluck('id')->toArray();
+                @endphp
+                @forelse($transactions as $transaction)
+                    <div class="transaction-item">
+                        <div class="transaction-icon {{ $transaction->transaction_type === 'withdrawal' ? 'withdrawal' : (in_array($transaction->from_account_id, $userAccountIds) ? 'sent' : 'received') }}">
+                            @if($transaction->transaction_type === 'withdrawal')
+                                <i class="fas fa-money-bill-wave"></i>
+                            @elseif(in_array($transaction->from_account_id, $userAccountIds))
+                                <i class="fas fa-arrow-up"></i>
+                            @else
+                                <i class="fas fa-arrow-down"></i>
+                            @endif
+                        </div>
+                        <div class="transaction-details">
+                            <p class="transaction-title">{{ ucfirst($transaction->transaction_type) }}</p>
+                            <p class="transaction-date">{{ $transaction->transaction_date->format('M d, g:i A') }}</p>
+                            <p style="font-size: 12px; color: #999; margin-top: 4px;">
+                                @if($transaction->transaction_type === 'withdrawal')
+                                    ({{ $transaction->fromAccount->account_type ?? 'account' }} account)
+                                @elseif(in_array($transaction->from_account_id, $userAccountIds))
+                                    ({{ $transaction->toAccount->account_type ?? 'account' }} account)
+                                @else
+                                    ({{ $transaction->fromAccount->account_type ?? 'account' }} account)
+                                @endif
+                            </p>
+                        </div>
+                        <div class="transaction-amount {{ in_array($transaction->from_account_id, $userAccountIds) ? 'negative' : 'positive' }}">
+                            {{ in_array($transaction->from_account_id, $userAccountIds) ? '-' : '+' }}${{ number_format($transaction->amount, 2) }}
+                        </div>
                     </div>
-                    <div class="transaction-details">
-                        <p class="transaction-title">Transfer to John Smith</p>
-                        <p class="transaction-date">Today, 2:30 PM</p>
+                @empty
+                    <div class="transaction-item">
+                        <p style="text-align: center; color: #999; padding: 20px;">No transactions yet</p>
                     </div>
-                    <div class="transaction-amount negative">
-                        -$250.00
-                    </div>
-                </div>
-
-                <div class="transaction-item">
-                    <div class="transaction-icon received">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <p class="transaction-title">Salary Deposit</p>
-                        <p class="transaction-date">Yesterday, 9:00 AM</p>
-                    </div>
-                    <div class="transaction-amount positive">
-                        +$5,000.00
-                    </div>
-                </div>
-
-                <div class="transaction-item">
-                    <div class="transaction-icon withdrawal">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <p class="transaction-title">ATM Withdrawal</p>
-                        <p class="transaction-date">Dec 10, 4:15 PM</p>
-                    </div>
-                    <div class="transaction-amount negative">
-                        -$500.00
-                    </div>
-                </div>
-
-                <div class="transaction-item">
-                    <div class="transaction-icon received">
-                        <i class="fas fa-arrow-down"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <p class="transaction-title">Refund from Amazon</p>
-                        <p class="transaction-date">Dec 9, 11:20 AM</p>
-                    </div>
-                    <div class="transaction-amount positive">
-                        +$89.99
-                    </div>
-                </div>
-
-                <div class="transaction-item">
-                    <div class="transaction-icon sent">
-                        <i class="fas fa-arrow-up"></i>
-                    </div>
-                    <div class="transaction-details">
-                        <p class="transaction-title">Netflix Subscription</p>
-                        <p class="transaction-date">Dec 8, 12:00 PM</p>
-                    </div>
-                    <div class="transaction-amount negative">
-                        -$15.99
-                    </div>
-                </div>
+                @endforelse
             </div>
         </div>
 

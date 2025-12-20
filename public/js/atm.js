@@ -8,7 +8,7 @@ class ATMWithdrawal {
         this.form = document.getElementById("withdraw-form");
         this.amountInput = document.getElementById("amount");
         this.accountOptions = document.querySelectorAll(
-            'input[name="account"]'
+            'input[name="account_id"]'
         );
         this.quickAmountBtns = document.querySelectorAll(".quick-amount-btn");
         this.modal = document.getElementById("confirmation-modal");

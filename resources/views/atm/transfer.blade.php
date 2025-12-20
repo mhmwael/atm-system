@@ -45,68 +45,36 @@
                     </label>
                     
                     <div class="account-selector">
-                        <div class="account-option" data-account="savings" data-balance="45280.50">
-                            <input type="radio" name="from_account" value="savings" id="from-savings" required>
-                            <label for="from-savings">
-                                <div class="account-option-header">
-                                    <div class="account-option-icon savings">
-                                        <i class="fas fa-piggy-bank"></i>
+                        @forelse($accounts as $account)
+                            <div class="account-option" data-account="{{ $account->id }}" data-balance="{{ $account->balance }}">
+                                <input type="radio" name="from_account_id" value="{{ $account->id }}" id="from-{{ $account->id }}" required>
+                                <label for="from-{{ $account->id }}">
+                                    <div class="account-option-header">
+                                        <div class="account-option-icon {{ $account->account_type }}">
+                                            @if($account->account_type === 'savings')
+                                                <i class="fas fa-piggy-bank"></i>
+                                            @elseif($account->account_type === 'current')
+                                                <i class="fas fa-wallet"></i>
+                                            @else
+                                                <i class="fas fa-crown"></i>
+                                            @endif
+                                        </div>
+                                        <div class="account-option-info">
+                                            <h4>{{ ucfirst($account->account_type) }} Account</h4>
+                                        </div>
+                                        <div class="account-option-check">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
                                     </div>
-                                    <div class="account-option-info">
-                                        <h4>Savings Account</h4>
+                                    <div class="account-option-balance">
+                                        <span>Available Balance</span>
+                                        <strong>${{ number_format($account->balance, 2) }}</strong>
                                     </div>
-                                    <div class="account-option-check">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                                <div class="account-option-balance">
-                                    <span>Available Balance</span>
-                                    <strong>$45,280.50</strong>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="account-option" data-account="current" data-balance="12450.00">
-                            <input type="radio" name="from_account" value="current" id="from-current">
-                            <label for="from-current">
-                                <div class="account-option-header">
-                                    <div class="account-option-icon current">
-                                        <i class="fas fa-wallet"></i>
-                                    </div>
-                                    <div class="account-option-info">
-                                        <h4>Current Account</h4>
-                                    </div>
-                                    <div class="account-option-check">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                                <div class="account-option-balance">
-                                    <span>Available Balance</span>
-                                    <strong>$12,450.00</strong>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="account-option" data-account="gold" data-balance="78900.25">
-                            <input type="radio" name="from_account" value="gold" id="from-gold">
-                            <label for="from-gold">
-                                <div class="account-option-header">
-                                    <div class="account-option-icon gold">
-                                        <i class="fas fa-crown"></i>
-                                    </div>
-                                    <div class="account-option-info">
-                                        <h4>Gold Account</h4>
-                                    </div>
-                                    <div class="account-option-check">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                                <div class="account-option-balance">
-                                    <span>Available Balance</span>
-                                    <strong>$78,900.25</strong>
-                                </div>
-                            </label>
-                        </div>
+                                </label>
+                            </div>
+                        @empty
+                            <p style="text-align: center; color: #999; padding: 20px;">No accounts available</p>
+                        @endforelse
                     </div>
                 </div>
 
@@ -120,14 +88,14 @@
                     <input 
                         type="text" 
                         id="to_account" 
-                        name="to_account" 
+                        name="to_account_number" 
                         class="form-input" 
                         placeholder="Enter recipient's account number"
-                        maxlength="16"
+                        maxlength="20"
                         required>
                     
                     <div class="input-info">
-                        <small><i class="fas fa-info-circle"></i> Enter the 16-digit account number</small>
+                        <small><i class="fas fa-info-circle"></i> Enter the 20-digit account number</small>
                     </div>
                 </div>
 
@@ -240,17 +208,6 @@
                         <span>Total Deduction:</span>
                         <strong id="conf-total" class="text-primary">$0.00</strong>
                     </div>
-                </div>
-
-                <div class="fingerprint-verification">
-                    <div class="fingerprint-icon">
-                        <i class="fas fa-fingerprint"></i>
-                    </div>
-                    <p>Place your finger on the sensor to confirm</p>
-                    <button type="button" class="btn btn-outline" id="verify-fingerprint">
-                        <i class="fas fa-fingerprint"></i>
-                        Verify with Fingerprint
-                    </button>
                 </div>
             </div>
         </div>

@@ -12,6 +12,7 @@ class Transaction extends Model
     protected $primaryKey = 'transaction_id';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = false;
 
     protected $fillable = [
         'transaction_id',
@@ -32,8 +33,6 @@ class Transaction extends Model
         'longitude' => 'decimal:8',
         'transaction_date' => 'datetime',
     ];
-
-    const UPDATED_AT = null; // No updated_at column
 
     // Relationships
     public function user()

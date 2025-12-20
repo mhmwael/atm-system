@@ -45,68 +45,36 @@
                     </label>
                     
                     <div class="account-selector">
-                        <div class="account-option" data-account="savings" data-balance="45280.50">
-                            <input type="radio" name="account" value="savings" id="acc-savings" required>
-                            <label for="acc-savings">
-                                <div class="account-option-header">
-                                    <div class="account-option-icon savings">
-                                        <i class="fas fa-piggy-bank"></i>
+                        @forelse($accounts as $account)
+                            <div class="account-option" data-account="{{ $account->id }}" data-balance="{{ $account->balance }}">
+                                <input type="radio" name="account_id" value="{{ $account->id }}" id="acc-{{ $account->id }}" required>
+                                <label for="acc-{{ $account->id }}">
+                                    <div class="account-option-header">
+                                        <div class="account-option-icon {{ $account->account_type }}">
+                                            @if($account->account_type === 'savings')
+                                                <i class="fas fa-piggy-bank"></i>
+                                            @elseif($account->account_type === 'current')
+                                                <i class="fas fa-wallet"></i>
+                                            @else
+                                                <i class="fas fa-crown"></i>
+                                            @endif
+                                        </div>
+                                        <div class="account-option-info">
+                                            <h4>{{ ucfirst($account->account_type) }} Account</h4>
+                                        </div>
+                                        <div class="account-option-check">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
                                     </div>
-                                    <div class="account-option-info">
-                                        <h4>Savings Account</h4>
+                                    <div class="account-option-balance">
+                                        <span>Available Balance</span>
+                                        <strong>${{ number_format($account->balance, 2) }}</strong>
                                     </div>
-                                    <div class="account-option-check">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                                <div class="account-option-balance">
-                                    <span>Available Balance</span>
-                                    <strong>$45,280.50</strong>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="account-option" data-account="current" data-balance="12450.00">
-                            <input type="radio" name="account" value="current" id="acc-current">
-                            <label for="acc-current">
-                                <div class="account-option-header">
-                                    <div class="account-option-icon current">
-                                        <i class="fas fa-wallet"></i>
-                                    </div>
-                                    <div class="account-option-info">
-                                        <h4>Current Account</h4>
-                                    </div>
-                                    <div class="account-option-check">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                                <div class="account-option-balance">
-                                    <span>Available Balance</span>
-                                    <strong>$12,450.00</strong>
-                                </div>
-                            </label>
-                        </div>
-
-                        <div class="account-option" data-account="gold" data-balance="78900.25">
-                            <input type="radio" name="account" value="gold" id="acc-gold">
-                            <label for="acc-gold">
-                                <div class="account-option-header">
-                                    <div class="account-option-icon gold">
-                                        <i class="fas fa-crown"></i>
-                                    </div>
-                                    <div class="account-option-info">
-                                        <h4>Gold Account</h4>
-                                    </div>
-                                    <div class="account-option-check">
-                                        <i class="fas fa-check-circle"></i>
-                                    </div>
-                                </div>
-                                <div class="account-option-balance">
-                                    <span>Available Balance</span>
-                                    <strong>$78,900.25</strong>
-                                </div>
-                            </label>
-                        </div>
+                                </label>
+                            </div>
+                        @empty
+                            <p style="text-align: center; color: #999; padding: 20px;">No accounts available</p>
+                        @endforelse
                     </div>
                 </div>
 
@@ -148,20 +116,7 @@
                         <button type="button" class="quick-amount-btn" data-amount="2000">$2,000</button>
                     </div>
                 </div>
-
-                <!-- Transaction Note (Optional) -->
-                <div class="form-section">
-                    <label class="form-label" for="note">
-                        <i class="fas fa-sticky-note"></i>
-                        Transaction Note (Optional)
-                    </label>
-                    <textarea 
-                        id="note" 
-                        name="note" 
-                        class="form-textarea" 
-                        rows="3" 
-                        placeholder="Add a note about this withdrawal..."></textarea>
-                </div>
+                
 
                 <!-- Form Actions -->
                 <div class="form-actions">
@@ -214,17 +169,6 @@
                         <span>Total Deduction:</span>
                         <strong id="conf-total" class="text-primary">$0.00</strong>
                     </div>
-                </div>
-
-                <div class="fingerprint-verification">
-                    <div class="fingerprint-icon">
-                        <i class="fas fa-fingerprint"></i>
-                    </div>
-                    <p>Place your finger on the sensor to confirm</p>
-                    <button type="button" class="btn btn-outline" id="verify-fingerprint">
-                        <i class="fas fa-fingerprint"></i>
-                        Verify with Fingerprint
-                    </button>
                 </div>
             </div>
         </div>
