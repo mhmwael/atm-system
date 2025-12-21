@@ -23,10 +23,23 @@ class AuthController extends Controller
 
     $cardNumber = $request->input('card_number');
     $pin = $request->input('pin');
+    $latitude = $request->input('latitude');
+    $longitude = $request->input('longitude');
     $user = User::where('card_number', $cardNumber)->first();
 
+    // Log location data
+    \Log::info('[Login] Location data:', ['latitude' => $latitude, 'longitude' => $longitude]);
     
     if ($user && hash('sha256', $pin) === $user->card_pin) {
+        // Update location if both are not empty (first login)
+        if ($latitude && $longitude && (empty($user->latitude) || empty($user->longitude))) {
+            \Log::info('[Login] Updating user location:', ['user_id' => $user->id, 'lat' => $latitude, 'lon' => $longitude]);
+            $user->update([
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+            ]);
+        }
+        
         Auth::login($user);
         $request->session()->regenerate();
         return redirect()->intended('dashboard');
@@ -43,10 +56,21 @@ class AuthController extends Controller
             'fingerprint_data' => 'required',
         ]);
 
+        $latitude = $request->input('latitude');
+        $longitude = $request->input('longitude');
+        
         // Find user by their credential ID
         $user = User::where('fingerprint_id', $request->fingerprint_data)->first();
 
         if ($user) {
+            // Update location if empty (first login)
+            if (empty($user->latitude) && empty($user->longitude)) {
+                $user->update([
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                ]);
+            }
+            
             Auth::login($user);
             $request->session()->regenerate();
             return redirect()->intended('dashboard');

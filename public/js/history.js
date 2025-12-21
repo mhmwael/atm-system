@@ -277,6 +277,11 @@ function showTransactionDetails(button) {
     const amount = item.querySelector(".transaction-amount").textContent;
     const type = item.dataset.type;
     const account = item.dataset.account;
+    const transactionId = item.dataset.transactionId;
+    const toAccountId = item.dataset.toAccountId;
+    const recipientName = item.dataset.recipientName;
+    const senderName = item.dataset.senderName;
+    const status = item.dataset.status;
 
     const accountNames = {
         savings: "Savings Account",
@@ -284,17 +289,44 @@ function showTransactionDetails(button) {
         gold: "Gold Account",
     };
 
-    // Update modal content
-    document.getElementById("detail-id").textContent =
-        "TXN-" + Date.now().toString().slice(-10);
+    // Update modal content with actual transaction ID from database
+    document.getElementById("detail-id").textContent = transactionId;
     document.getElementById("detail-type").textContent =
         type.charAt(0).toUpperCase() + type.slice(1);
     document.getElementById("detail-date").textContent = meta;
     document.getElementById("detail-account").textContent =
         accountNames[account] || account;
     document.getElementById("detail-amount").textContent = amount;
-    document.getElementById("detail-ref").textContent =
-        "REF-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    // Show recipient/sender info for transfer transactions
+    const recipientRow = document.getElementById("detail-recipient-row");
+    const label = document.getElementById("detail-transfer-label");
+
+    if (type === "transfer") {
+        // Check if this is a sent transfer (recipientName) or received transfer (senderName)
+        if (recipientName) {
+            // Sent transfer
+            document.getElementById("detail-recipient").textContent =
+                recipientName;
+            label.textContent = "Transferred To";
+            recipientRow.style.display = "flex";
+        } else if (senderName) {
+            // Received transfer
+            document.getElementById("detail-recipient").textContent =
+                senderName;
+            label.textContent = "Transferred From";
+            recipientRow.style.display = "flex";
+        } else {
+            recipientRow.style.display = "none";
+        }
+    } else {
+        recipientRow.style.display = "none";
+    }
+
+    // Update status
+    if (status) {
+        document.getElementById("detail-status").textContent = status;
+    }
 
     // Show modal
     const modal = document.getElementById("details-modal");

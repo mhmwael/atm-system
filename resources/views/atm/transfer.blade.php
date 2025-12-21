@@ -36,6 +36,8 @@
             
             <form id="transfer-form" action="{{ url('/atm/transfer') }}" method="POST">
                 @csrf
+                <input type="hidden" name="latitude" id="transfer-latitude">
+                <input type="hidden" name="longitude" id="transfer-longitude">
                 
                 <!-- From Account Selection -->
                 <div class="form-section">
@@ -227,5 +229,33 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/geolocation.js') }}"></script>
 <script src="{{ url('js/transfer.js') }}"></script>
+<script>
+    // Capture location when page loads
+    function captureTransferLocation() {
+        console.log('[Transfer] Attempting to capture location...');
+        
+        if (typeof geoHandler !== 'undefined' && geoHandler.isSupported) {
+            geoHandler.getCurrentLocation()
+                .then(location => {
+                    console.log('[Transfer] ✓ Location captured:', location);
+                    document.getElementById('transfer-latitude').value = location.latitude;
+                    document.getElementById('transfer-longitude').value = location.longitude;
+                })
+                .catch(error => {
+                    console.warn('[Transfer] Location error:', error.message);
+                });
+        } else {
+            console.warn('[Transfer] Geolocation not supported');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', captureTransferLocation);
+    } else {
+        captureTransferLocation();
+    }
+    window.addEventListener('load', captureTransferLocation);
+</script>
 @endpush

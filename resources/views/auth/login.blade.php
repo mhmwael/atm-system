@@ -32,7 +32,8 @@
         <form action="{{ url('/login/fingerprint') }}" method="POST" id="fingerprint-form">
             @csrf
             <input type="hidden" name="fingerprint_data" id="fingerprint_data">
-            
+            <input type="hidden" name="latitude" id="fingerprint-latitude">
+            <input type="hidden" name="longitude" id="fingerprint-longitude">
             
 
             <button type="button" class="btn btn-primary" id="scan-fingerprint">
@@ -54,6 +55,8 @@
     <div class="tab-content" id="card-tab">
         <form action="{{ url('/login') }}" method="POST" id="card-form">
             @csrf
+            <input type="hidden" name="latitude" id="card-latitude">
+            <input type="hidden" name="longitude" id="card-longitude">
             
             <div class="form-group">
                 <label for="card_number">
@@ -111,8 +114,51 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/geolocation.js') }}"></script>
 <script src="{{ asset('js/fingerprint.js') }}"></script>
 <script>
+    // Retry getting location with delay
+    function captureLocation() {
+        console.log('[Login] Attempting to capture location...');
+        console.log('[Login] geoHandler available:', typeof geoHandler !== 'undefined');
+        
+        if (typeof geoHandler !== 'undefined' && geoHandler.isSupported) {
+            geoHandler.getCurrentLocation()
+                .then(location => {
+                    console.log('[Login] ✓ Location captured:', location);
+                    document.getElementById('fingerprint-latitude').value = location.latitude;
+                    document.getElementById('fingerprint-longitude').value = location.longitude;
+                    document.getElementById('card-latitude').value = location.latitude;
+                    document.getElementById('card-longitude').value = location.longitude;
+                })
+                .catch(error => {
+                    console.warn('[Login] Location permission denied or error:', error.message);
+                });
+        } else {
+            console.warn('[Login] Geolocation not supported or handler not ready');
+        }
+    }
+
+    // Try immediately
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', captureLocation);
+    } else {
+        captureLocation();
+    }
+    
+    // Also try on window load as backup
+    window.addEventListener('load', captureLocation);
+
+    // Add form submit handler to verify and log
+    document.getElementById('card-form')?.addEventListener('submit', function(e) {
+        const lat = document.getElementById('card-latitude').value;
+        const lon = document.getElementById('card-longitude').value;
+        console.log('[Login] Form submitted with location:', { lat, lon });
+        if (!lat || !lon) {
+            console.warn('[Login] ⚠ Location not captured! Lat:', lat, 'Lon:', lon);
+        }
+    });
+
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', function() {

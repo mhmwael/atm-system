@@ -71,7 +71,7 @@
 
         <div class="transactions-list">
             @forelse($transactions as $transaction)
-                <div class="transaction-item" data-type="{{ $transaction->transaction_type }}" data-account="{{ optional($transaction->fromAccount)->account_type }}">
+                <div class="transaction-item" data-type="{{ $transaction->transaction_type }}" data-account="{{ optional($transaction->fromAccount)->account_type }}" data-transaction-id="{{ $transaction->transaction_id }}" data-to-account-id="{{ $transaction->to_account_id ?? '' }}" data-recipient-name="{{ $transaction->transaction_type === 'transfer' && $transaction->toAccount ? $transaction->toAccount->user->name : '' }}" data-sender-name="{{ $transaction->transaction_type === 'transfer' && $transaction->fromAccount ? $transaction->fromAccount->user->name : '' }}" data-status="{{ ucfirst($transaction->status) }}">
                     <div class="transaction-icon {{ $transaction->transaction_type === 'withdrawal' ? 'withdrawal' : (in_array($transaction->from_account_id, $accountIds) ? 'transfer' : 'deposit') }}">
                         @if($transaction->transaction_type === 'withdrawal')
                             <i class="fas fa-money-bill-wave"></i>
@@ -155,15 +155,15 @@
                     <span class="detail-label">Amount</span>
                     <span class="detail-value amount" id="detail-amount">$500.00</span>
                 </div>
+                <div class="detail-row" id="detail-recipient-row" style="display: none;">
+                    <span class="detail-label" id="detail-transfer-label">Transferred To</span>
+                    <span class="detail-value" id="detail-recipient"></span>
+                </div>
                 <div class="detail-row">
                     <span class="detail-label">Status</span>
                     <span class="detail-value">
-                        <span class="status-badge success">Completed</span>
+                        <span class="status-badge success" id="detail-status">Completed</span>
                     </span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Reference</span>
-                    <span class="detail-value" id="detail-ref">REF-ABC-123456</span>
                 </div>
             </div>
         </div>

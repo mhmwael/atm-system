@@ -9,7 +9,7 @@ class ATMTransfer {
         this.amountInput = document.getElementById("amount");
         this.toAccountInput = document.getElementById("to_account");
         this.fromAccountOptions = document.querySelectorAll(
-            'input[name="from_account"]'
+            'input[name="from_account_id"]'
         );
         this.quickAmountBtns = document.querySelectorAll(".quick-amount-btn");
         this.modal = document.getElementById("confirmation-modal");
@@ -60,14 +60,28 @@ class ATMTransfer {
         const accountNumber = this.toAccountInput.value.replace(/\s/g, "");
         const recipientInfo = document.getElementById("recipient-info");
 
-        // Demo: Show recipient info when account number is 16 digits
-        if (accountNumber.length === 16) {
-            // Simulate recipient lookup
-            document.getElementById("recipient-name").textContent =
-                "John Smith";
-            document.getElementById("recipient-bank").textContent =
-                "SecureBank • Account verified";
-            recipientInfo.style.display = "block";
+        // Show recipient info when account number is 20 digits
+        if (accountNumber.length === 20) {
+            // Fetch recipient info from server
+            fetch("/api/account-holder/" + accountNumber)
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        document.getElementById("recipient-name").textContent =
+                            data.name;
+                        document.getElementById("recipient-bank").textContent =
+                            "SecureBank • Account verified";
+                        recipientInfo.style.display = "block";
+                    } else {
+                        document.getElementById("recipient-name").textContent =
+                            "Account not found";
+                        recipientInfo.style.display = "block";
+                    }
+                })
+                .catch((error) => {
+                    console.warn("[Transfer] Error looking up account:", error);
+                    recipientInfo.style.display = "none";
+                });
         } else {
             recipientInfo.style.display = "none";
         }
@@ -111,9 +125,9 @@ class ATMTransfer {
         }
 
         // Check account number length
-        if (toAccount.length < 10 || toAccount.length > 16) {
+        if (toAccount.length < 10 || toAccount.length > 20) {
             this.showError(
-                "Please enter a valid account number (10-16 digits)"
+                "Please enter a valid account number (10-20 digits)"
             );
             return false;
         }

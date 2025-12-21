@@ -141,6 +141,16 @@
     @endauth
 
     <script>
+        // Close alert messages
+        document.querySelectorAll('.alert-close').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentElement.style.animation = 'fadeOut 0.3s ease-out';
+                setTimeout(() => {
+                    this.parentElement.remove();
+                }, 300);
+            });
+        });
+
         // Toggle sidebar
         document.getElementById('menu-toggle').addEventListener('click', function() {
             document.getElementById('sidebar').classList.toggle('collapsed');

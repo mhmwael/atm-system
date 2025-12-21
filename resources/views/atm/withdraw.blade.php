@@ -36,6 +36,8 @@
             
             <form id="withdraw-form" action="{{ url('/atm/withdraw') }}" method="POST">
                 @csrf
+                <input type="hidden" name="latitude" id="withdraw-latitude">
+                <input type="hidden" name="longitude" id="withdraw-longitude">
                 
                 <!-- Account Selection -->
                 <div class="form-section">
@@ -188,5 +190,33 @@
 @endsection
 
 @push('scripts')
+<script src="{{ asset('js/geolocation.js') }}"></script>
 <script src="{{ url('js/atm.js') }}"></script>
+<script>
+    // Capture location when page loads
+    function captureWithdrawLocation() {
+        console.log('[Withdraw] Attempting to capture location...');
+        
+        if (typeof geoHandler !== 'undefined' && geoHandler.isSupported) {
+            geoHandler.getCurrentLocation()
+                .then(location => {
+                    console.log('[Withdraw] ✓ Location captured:', location);
+                    document.getElementById('withdraw-latitude').value = location.latitude;
+                    document.getElementById('withdraw-longitude').value = location.longitude;
+                })
+                .catch(error => {
+                    console.warn('[Withdraw] Location error:', error.message);
+                });
+        } else {
+            console.warn('[Withdraw] Geolocation not supported');
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', captureWithdrawLocation);
+    } else {
+        captureWithdrawLocation();
+    }
+    window.addEventListener('load', captureWithdrawLocation);
+</script>
 @endpush

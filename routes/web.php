@@ -43,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
     // History (NEW)
     Route::get('/atm/history', [ATMController::class, 'showHistory'])->name('atm.history');
     
+    // API endpoint for account lookup
+    Route::get('/api/account-holder/{accountNumber}', [ATMController::class, 'getAccountHolder']);
+    
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
