@@ -278,20 +278,15 @@
 <script>
     // Capture location when page loads
     function captureWithdrawLocation() {
-        console.log('[Withdraw] Attempting to capture location...');
-        
         if (typeof geoHandler !== 'undefined' && geoHandler.isSupported) {
             geoHandler.getCurrentLocation()
                 .then(location => {
-                    console.log('[Withdraw] ✓ Location captured:', location);
                     document.getElementById('withdraw-latitude').value = location.latitude;
                     document.getElementById('withdraw-longitude').value = location.longitude;
                 })
                 .catch(error => {
-                    console.warn('[Withdraw] Location error:', error.message);
                 });
         } else {
-            console.warn('[Withdraw] Geolocation not supported');
         }
     }
     

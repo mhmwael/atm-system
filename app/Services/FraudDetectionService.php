@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Transaction;
 use App\Models\FraudLog;
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class FraudDetectionService
 {

@@ -322,20 +322,15 @@
 <script>
     // Capture location when page loads
     function captureTransferLocation() {
-        console.log('[Transfer] Attempting to capture location...');
-        
         if (typeof geoHandler !== 'undefined' && geoHandler.isSupported) {
             geoHandler.getCurrentLocation()
                 .then(location => {
-                    console.log('[Transfer] ✓ Location captured:', location);
                     document.getElementById('transfer-latitude').value = location.latitude;
                     document.getElementById('transfer-longitude').value = location.longitude;
                 })
                 .catch(error => {
-                    console.warn('[Transfer] Location error:', error.message);
                 });
         } else {
-            console.warn('[Transfer] Geolocation not supported');
         }
     }
     

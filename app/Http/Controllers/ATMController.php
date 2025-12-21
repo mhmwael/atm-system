@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Account;
 use App\Models\Transaction;
-use App\Services\BankingConfig;
 use App\Services\FraudDetectionService;
 
 class ATMController extends Controller
