@@ -187,6 +187,89 @@
         </div>
     </div>
 </div>
+@if(session('verify_pin'))
+<!-- PIN Verification Modal -->
+<div class="modal active" id="pin-verification-modal">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-shield-alt"></i> Security Check</h3>
+            <button class="modal-close" id="close-pin-modal" onclick="document.getElementById('pin-verification-modal').classList.remove('active'); document.body.style.overflow='';">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="modal-body">
+            <div class="confirmation-details">
+                <div class="confirmation-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                
+                <div class="confirmation-info">
+                    <div class="conf-row">
+                        <span>Account:</span>
+                        <strong>
+                            @php
+                                $selected = $accounts->firstWhere('id', old('account_id'));
+                            @endphp
+                            {{ $selected ? ucfirst($selected->account_type).' Account' : '-' }}
+                        </strong>
+                    </div>
+                    <div class="conf-row">
+                        <span>Amount:</span>
+                        <strong class="text-primary">${{ number_format((float)old('amount', 0), 2) }}</strong>
+                    </div>
+                    <div class="conf-row">
+                        <span>Transaction Fee:</span>
+                        <strong>$0.00</strong>
+                    </div>
+                    <div class="conf-divider"></div>
+                    <div class="conf-row total">
+                        <span>Total Deduction:</span>
+                        <strong class="text-primary">${{ number_format((float)old('amount', 0), 2) }}</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <form method="POST" action="{{ url('/atm/withdraw') }}">
+                @csrf
+                <input type="hidden" name="account_id" value="{{ old('account_id') }}">
+                <input type="hidden" name="amount" value="{{ old('amount') }}">
+                <input type="hidden" name="latitude" value="{{ old('latitude') }}">
+                <input type="hidden" name="longitude" value="{{ old('longitude') }}">
+                
+                <div class="form-section">
+                    <label class="form-label" for="pin">
+                        <i class="fas fa-key"></i>
+                        Enter 4-Digit PIN
+                    </label>
+                    <input 
+                        type="password" 
+                        name="pin" 
+                        id="pin" 
+                        maxlength="4" 
+                        placeholder="••••"
+                        style="width: 100%; padding: 0.9rem 1rem; border: 2px solid var(--border-color); border-radius: 10px; font-size: 1.25rem; letter-spacing: 0.5rem; text-align: center;"
+                        required 
+                        autofocus 
+                        autocomplete="off">
+                </div>
+                
+                <div class="modal-footer">
+                    <a href="{{ url('/atm/withdraw') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check"></i>
+                        Verify & Proceed
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 @endsection
 
 @push('scripts')

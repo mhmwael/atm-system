@@ -39,7 +39,11 @@
                 
                 <div class="user-menu">
                     <div class="user-avatar">
-                        <i class="fas fa-user"></i>
+                        @if(auth()->check() && auth()->user()->profile_image)
+                            <img src="{{ asset(auth()->user()->profile_image) }}" alt="{{ auth()->user()->name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user"></i>
+                        @endif
                     </div>
                     <div class="user-info">
                         <span class="user-name">{{ auth()->user()->name ?? 'John Doe' }}</span>
@@ -54,6 +58,15 @@
                             @else
                                 <a href="#" id="register-fingerprint"><i class="fas fa-fingerprint"></i> Register Fingerprint</a>
                             @endif
+                            <hr>
+                            <form action="{{ route('profile.upload') }}" method="POST" enctype="multipart/form-data" style="padding: 0.75rem 1.25rem;">
+                                @csrf
+                                <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-image"></i> Upload Profile Picture
+                                </label>
+                                <input type="file" name="profile_image" accept="image/*" style="width: 100%; margin-bottom: 0.75rem;">
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
+                            </form>
                         @endauth
                         <hr>
                         <a href="{{ url('/logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

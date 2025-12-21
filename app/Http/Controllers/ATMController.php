@@ -6,10 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Services\BankingConfig;
+use App\Services\FraudDetectionService;
 
 class ATMController extends Controller
-{
-    public function index()
+{    public function index()
     {
         return view('atm.index');
     }
@@ -45,17 +46,37 @@ class ATMController extends Controller
         if (!$account || $account->user_id !== $user->id) {
             return back()->with('error', 'Account not found.');
         }
+        if ($account->isFrozen()) {
+            return back()->with('error', 'This account is frozen and cannot perform transactions.');
+        }
         
         // Check if account has sufficient balance
         if (!$account->hasSufficientBalance($amount)) {
             return back()->with('error', 'Insufficient balance for this withdrawal.');
         }
         
+        $fraudService = FraudDetectionService::getInstance();
+        $fraudCheck = $fraudService->checkFraud($user->id, $amount, $latitude, $longitude);
+        if ($fraudCheck['is_fraud']) {
+            $pin = $request->input('pin');
+            if (!$pin || hash('sha256', $pin) !== $user->card_pin) {
+                $attemptKey = "pin_attempts_account_{$account->id}";
+                $attempts = session($attemptKey, 0) + 1;
+                session([$attemptKey => $attempts]);
+                if ($attempts >= 3) {
+                    $account->freeze();
+                    session()->forget($attemptKey);
+                    return back()->with('error', 'Account frozen after 3 failed PIN attempts.');
+                }
+                return back()->withInput()->with('verify_pin', true)->with('error', 'Unusual activity detected. Please enter your PIN to confirm this transaction.');
+            }
+        }
+        
         // Deduct the amount from account
         $account->deduct($amount);
         
         // Create transaction record with location
-        Transaction::create([
+        $transaction = Transaction::create([
             'transaction_id' => Transaction::generateTransactionId(),
             'user_id' => $user->id,
             'from_account_id' => $account->id,
@@ -67,6 +88,12 @@ class ATMController extends Controller
             'status' => 'completed',
             'transaction_date' => now(),
         ]);
+
+        // Check for fraud
+        $fraudService = FraudDetectionService::getInstance();
+        $attempts = session("pin_attempts_account_{$account->id}", 0);
+        session()->forget("pin_attempts_account_{$account->id}");
+        $fraudService->detectFraud($user->id, $amount, $transaction->transaction_id, $latitude, $longitude, $attempts);
 
         return redirect()
             ->route('dashboard')
@@ -106,6 +133,9 @@ class ATMController extends Controller
         if (!$fromAccount || $fromAccount->user_id !== $user->id) {
             return back()->with('error', 'From account not found.');
         }
+        if ($fromAccount->isFrozen()) {
+            return back()->with('error', 'This account is frozen and cannot perform transactions.');
+        }
         
         // Get the to account by account number
         $toAccount = Account::where('account_number', $toAccountNumber)->first();
@@ -119,6 +149,23 @@ class ATMController extends Controller
             return back()->with('error', 'Insufficient balance for this transfer.');
         }
         
+        $fraudService = FraudDetectionService::getInstance();
+        $fraudCheck = $fraudService->checkFraud($user->id, $amount, $latitude, $longitude);
+        if ($fraudCheck['is_fraud']) {
+            $pin = $request->input('pin');
+            if (!$pin || hash('sha256', $pin) !== $user->card_pin) {
+                $attemptKey = "pin_attempts_account_{$fromAccount->id}";
+                $attempts = session($attemptKey, 0) + 1;
+                session([$attemptKey => $attempts]);
+                if ($attempts >= 3) {
+                    $fromAccount->freeze();
+                    session()->forget($attemptKey);
+                    return back()->with('error', 'Account frozen after 3 failed PIN attempts.');
+                }
+                return back()->withInput()->with('verify_pin', true)->with('error', 'Unusual activity detected. Please enter your PIN to confirm this transaction.');
+            }
+        }
+        
         // Deduct from source account
         $fromAccount->deduct($amount);
         
@@ -126,7 +173,7 @@ class ATMController extends Controller
         $toAccount->deposit($amount);
         
         // Create transaction record with location
-        Transaction::create([
+        $transaction = Transaction::create([
             'transaction_id' => Transaction::generateTransactionId(),
             'user_id' => $user->id,
             'from_account_id' => $fromAccount->id,
@@ -138,6 +185,12 @@ class ATMController extends Controller
             'status' => 'completed',
             'transaction_date' => now(),
         ]);
+
+        // Check for fraud
+        $fraudService = FraudDetectionService::getInstance();
+        $attempts = session("pin_attempts_account_{$fromAccount->id}", 0);
+        session()->forget("pin_attempts_account_{$fromAccount->id}");
+        $fraudService->detectFraud($user->id, $amount, $transaction->transaction_id, $latitude, $longitude, $attempts);
 
         return redirect()
             ->route('dashboard')

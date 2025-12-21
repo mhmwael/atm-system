@@ -46,6 +46,9 @@ Route::middleware(['auth'])->group(function () {
     // API endpoint for account lookup
     Route::get('/api/account-holder/{accountNumber}', [ATMController::class, 'getAccountHolder']);
     
+    // Profile image upload
+    Route::post('/profile/upload', [DashboardController::class, 'uploadProfileImage'])->name('profile.upload');
+    
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

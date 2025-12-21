@@ -15,6 +15,7 @@ class User extends Authenticatable
         'email',
         'phone',
         'fingerprint_id',
+        'profile_image',
         'card_number',
         'card_pin',
         'latitude',
