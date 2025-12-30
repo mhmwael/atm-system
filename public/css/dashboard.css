@@ -199,6 +199,40 @@
     color: #6b7280;
 }
 
+/* Responsive: Admin & Transactions lists */
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.25rem;
+    }
+
+    .transaction-item {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        padding: 1rem 1.25rem;
+    }
+
+    .transaction-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .transaction-details {
+        width: 100%;
+    }
+
+    .transaction-title {
+        font-size: 1rem;
+    }
+
+    .transaction-date {
+        font-size: 0.8rem;
+    }
+}
+
 /* Quick Actions Grid */
 .quick-actions-grid {
     display: grid;

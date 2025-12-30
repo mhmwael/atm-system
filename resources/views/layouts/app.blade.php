@@ -53,16 +53,16 @@
                     
                     <div class="user-dropdown">
                         @auth
-                            @if(auth()->user()->fingerprint_id)
-                                <a href="#" style="opacity: 0.6; cursor: default;"><i class="fas fa-fingerprint"></i> Fingerprint Registered ✓</a>
-                            @else
-                                <a href="#" id="register-fingerprint"><i class="fas fa-fingerprint"></i> Register Fingerprint</a>
-                            @endif
-                            <hr>
-                            <form action="{{ route('profile.upload') }}" method="POST" enctype="multipart/form-data" style="padding: 0.75rem 1.25rem;">
-                                @csrf
-                                <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">
-                                    <i class="fas fa-image"></i> Upload Profile Picture
+                        @if(auth()->user()->fingerprint_id)
+                            <a href="#" style="opacity: 0.6; cursor: default;"><i class="fas fa-fingerprint"></i> Fingerprint Registered ✓</a>
+                        @else
+                            <a href="#" id="register-fingerprint"><i class="fas fa-fingerprint"></i> Register Fingerprint</a>
+                        @endif
+                        <hr>
+                        <form action="{{ route('profile.upload') }}" method="POST" enctype="multipart/form-data" style="padding: 0.75rem 1.25rem;">
+                            @csrf
+                            <label style="display: flex; align-items: center; gap: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas fa-image"></i> Upload Profile Picture
                                 </label>
                                 <input type="file" name="profile_image" accept="image/*" style="width: 100%; margin-bottom: 0.75rem;">
                                 <button type="submit" class="btn btn-primary" style="width: 100%;">Save</button>
@@ -89,28 +89,23 @@
                 <span>Dashboard</span>
             </a>
             
-            <div class="nav-section">
-                <span class="nav-section-title">Banking</span>
-            </div>
-            
-            
-            <a href="{{ url('/atm/withdraw') }}" class="nav-item">
-                <i class="fas fa-money-bill-wave"></i>
-                <span>Withdraw</span>
-            </a>
-            
-            <a href="{{ url('/atm/transfer') }}" class="nav-item">
-                <i class="fas fa-exchange-alt"></i>
-                <span>Transfer Money</span>
-            </a>
-            
-            
-            <a href="{{ url('/atm/history') }}" class="nav-item">
-                <i class="fas fa-history"></i>
-                <span>Transaction History</span>
-            </a>
-            
-            
+            @unless(request()->routeIs('admin.*'))
+                <div class="nav-section">
+                    <span class="nav-section-title">Banking</span>
+                </div>
+                <a href="{{ url('/atm/withdraw') }}" class="nav-item">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span>Withdraw</span>
+                </a>
+                <a href="{{ url('/atm/transfer') }}" class="nav-item">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Transfer Money</span>
+                </a>
+                <a href="{{ url('/atm/history') }}" class="nav-item">
+                    <i class="fas fa-history"></i>
+                    <span>Transaction History</span>
+                </a>
+            @endunless
         </nav>
         
         <div class="sidebar-footer">

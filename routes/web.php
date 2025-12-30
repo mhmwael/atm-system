@@ -25,30 +25,29 @@ Route::middleware(['auth'])->group(function () {
 
 // Protected Routes
 Route::middleware(['auth'])->group(function () {
-    
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
-    // ATM Routes
     Route::get('/atm', [ATMController::class, 'index'])->name('atm.index');
-    
-    // Withdrawal
     Route::get('/atm/withdraw', [ATMController::class, 'showWithdraw'])->name('atm.withdraw');
     Route::post('/atm/withdraw', [ATMController::class, 'processWithdraw']);
-    
-    // Transfer
     Route::get('/atm/transfer', [ATMController::class, 'showTransfer'])->name('atm.transfer');
     Route::post('/atm/transfer', [ATMController::class, 'processTransfer']);
-    
-    // History (NEW)
     Route::get('/atm/history', [ATMController::class, 'showHistory'])->name('atm.history');
-    
-    // API endpoint for account lookup
     Route::get('/api/account-holder/{accountNumber}', [ATMController::class, 'getAccountHolder']);
-    
-    // Profile image upload
     Route::post('/profile/upload', [DashboardController::class, 'uploadProfileImage'])->name('profile.upload');
-    
-    // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
+
+// Admin-only Routes
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', [\App\Http\Controllers\AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/users/create', [\App\Http\Controllers\AdminController::class, 'showCreateForm'])->name('admin.users.create');
+    Route::post('/admin/users', [\App\Http\Controllers\AdminController::class, 'storeUser'])->name('admin.users.store');
+    Route::post('/admin/users/{id}/delete', [\App\Http\Controllers\AdminController::class, 'deleteUser'])->name('admin.users.delete');
+    
+    // Account Management Routes
+    Route::get('/admin/users/{userId}/accounts', [\App\Http\Controllers\AdminController::class, 'manageAccounts'])->name('admin.accounts.manage');
+    Route::post('/admin/users/{userId}/accounts', [\App\Http\Controllers\AdminController::class, 'storeAccount'])->name('admin.accounts.store');
+    Route::post('/admin/users/{userId}/accounts/{accountId}/deposit', [\App\Http\Controllers\AdminController::class, 'depositAccount'])->name('admin.accounts.deposit');
+    Route::post('/admin/users/{userId}/accounts/{accountId}/freeze', [\App\Http\Controllers\AdminController::class, 'freezeAccount'])->name('admin.accounts.freeze');
+    Route::post('/admin/users/{userId}/accounts/{accountId}/unfreeze', [\App\Http\Controllers\AdminController::class, 'unfreezeAccount'])->name('admin.accounts.unfreeze');
 });
