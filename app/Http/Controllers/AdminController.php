@@ -52,7 +52,6 @@ class AdminController extends Controller
             'phone' => $validated['phone'],
             'card_pin' => hash('sha256', $validated['card_pin']),
             'card_number' => $cardNumber,
-            'password' => bcrypt('DefaultPassword123!'), // Default password
         ]);
 
         return redirect()->route('admin.index')->with('success', "User '{$user->name}' created successfully! Card Number: {$cardNumber}");
